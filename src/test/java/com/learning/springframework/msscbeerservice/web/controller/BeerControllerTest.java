@@ -1,6 +1,8 @@
 package com.learning.springframework.msscbeerservice.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.learning.springframework.msscbeerservice.bootstrap.BeerLoader;
+import com.learning.springframework.msscbeerservice.services.BeerService;
 import com.learning.springframework.msscbeerservice.web.model.BeerDto;
 import com.learning.springframework.msscbeerservice.web.model.BeerStyleEnum;
 import org.junit.jupiter.api.Test;
@@ -33,8 +35,13 @@ class BeerControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @MockBean
+    BeerService beerService;
+
     @Test
     void getBeerById() throws Exception {
+        given(beerService.getById(any())).willReturn(getValidBeerDto());
+
         mockMvc.perform(get("/api/v1/beer/" + UUID.randomUUID().toString()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -43,6 +50,8 @@ class BeerControllerTest {
     void saveNewBeer() throws Exception {
         BeerDto beerDto = getValidBeerDto();
         String beerDtoJson = objectMapper.writeValueAsString(beerDto);
+
+        given(beerService.saveNewBeer(any())).willReturn(getValidBeerDto());
 
         mockMvc.perform(post("/api/v1/beer/")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -56,6 +65,8 @@ class BeerControllerTest {
         BeerDto beerDto = getValidBeerDto();
         String beerDtoJson = objectMapper.writeValueAsString(beerDto);
 
+        given(beerService.updateBeer(any(),any())).willReturn(getValidBeerDto());
+
         mockMvc.perform(put("/api/v1/beer/" + UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(beerDtoJson))
@@ -67,7 +78,7 @@ class BeerControllerTest {
                         .beerName("Test Beer")
                         .beerStyle(BeerStyleEnum.ALE)
                         .price(new BigDecimal("3.99"))
-                        .upc(123456789L)
+                        .upc(BeerLoader.BEER_1_UPC)
                         .build();
     }
 }
